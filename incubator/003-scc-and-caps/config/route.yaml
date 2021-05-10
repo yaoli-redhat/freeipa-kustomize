@@ -1,0 +1,12 @@
+---
+apiVersion: v1
+kind: Route
+metadata:
+  name: poc-003
+  labels:
+    app: poc-003
+spec:
+  host: poc-003
+  to:
+    kind: Service
+    name: poc-003

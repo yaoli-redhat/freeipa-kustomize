@@ -1,0 +1,372 @@
+# Manual template for testing the application deployment before to take this
+# into the operator world.
+#
+# To get the final deployment, run:
+#   envsubst < Deployment.yaml.subst > Deployment.yaml
+#
+# Below the environment variables used into the template:
+#   - NAMESPACE
+#
+# This will substitute the environment variables in the template and it will generate
+# the final version to be tested.
+#
+# To apply the deployment, run:
+#   oc create -f Deployment.yaml
+#
+# To delete all the objects, run:
+#   oc delete all,cm,sa,role,rolebinding -l app=freeipa
+#
+# References:
+#  - https://kubernetes.io/docs/tasks/inject-data-application/environment-variable-expose-pod-information/
+#  - https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/
+#  - https://kubernetes.io/docs/tasks/inject-data-application/downward-api-volume-expose-pod-information/#store-container-fields
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: freeipa
+  labels:
+    app: freeipa
+automountServiceAccountToken: true
+secrets: []
+# imagePullSecrets: []
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: freeipa
+  labels:
+    app: freeipa
+rules:
+  - apiGroups:
+      - project.openshift.io
+    resources:
+      # - projects
+      # - project
+      - ResourceAll
+    verbs:
+      # - GET
+      - VerbAll
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: freeipa
+  labels:
+    app: freeipa
+roleRef:
+  kind: Role
+  apiGroup: rbac.authorization.k8s.io
+  name: freeipa
+subjects:
+  - kind: ServiceAccount
+    name: default-plus
+    apiGroup: ""
+---
+# ConfigMap object to inject the script to be executed.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: freeipa
+  labels:
+    app: freeipa
+data:
+  # The machine-id is created by the init container
+  MACHINE_ID: ""
+  REFERENCED_ENV_VAR1: "hello"
+  REFERENCED_ENV_VAR2: "world"
+  create-machine-id: |
+    #!/bin/bash
+    #
+    # References
+    #   https://kubernetes.io/docs/tasks/administer-cluster/access-cluster-api/#without-using-a-proxy
+    #
+
+    APISERVER="https://kubernetes.default.svc"
+    SERVICEACCOUNT="/var/run/secrets/kubernetes.io/serviceaccount"
+    NAMESPACE="$( cat "${SERVICEACCOUNT}/namespace" )"
+    TOKEN="$( cat "${SERVICEACCOUNT}/token" )"
+    CACERT="${SERVICEACCOUNT}/ca.crt"
+
+    dbus-uuidgen --ensure=/etc/machine-id
+    MACHINE_ID="$( cat /etc/machine-id )"
+    oc login --certificate-authority "${CACERT}" --token "${TOKEN}" "${APISERVER}"
+
+    oc patch configmap freeipa 
+  test-script-1: |
+    #!/bin/bash
+    while true
+    do
+      echo -en '\n'
+
+      env | grep -v MY_
+
+      [[ -e /etc/podinfo/cpu_limit ]] \
+      && echo -en '\ncpu_limit: '; cat /etc/podinfo/cpu_limit
+
+      [[ -e /etc/podinfo/cpu_request ]] \
+      && echo -en '\ncpu_request: '; cat /etc/podinfo/cpu_request
+
+      [[ -e /etc/podinfo/mem_limit ]] \
+      && echo -en '\nmem_limit: '; cat /etc/podinfo/mem_limit
+
+      [[ -e /etc/podinfo/mem_request ]] \
+      && echo -en '\nmem_request: '; cat /etc/podinfo/mem_request
+
+      [[ -e /etc/podinfo/labels ]] \
+      && echo -en '\nlabels:\n'; cat /etc/podinfo/labels
+
+      [[ -e /etc/podinfo/annotations ]] \
+      && echo -en '\nannotations:\n'; cat /etc/podinfo/annotations
+
+      echo -en '\n'
+
+      echo '\nSpecific MY_ environment variables:'
+      env | grep MY_
+
+      echo -en '\n\n\n'
+      sleep 5
+    done
+  test-script-2: |
+    #!/bin/bash
+    ls -l /var/run/secrets/kubernetes.io/serviceaccount
+    TOKEN="$( cat /var/run/secrets/kubernetes.io/serviceaccount/token )"
+    NAMESPACE="$( cat /var/run/secrets/kubernetes.io/serviceaccount/namespace )"
+    echo "TOKEN=$TOKEN"
+    echo "NAMESPACE=$NAMESPACE"
+    echo -en "oc login: "; oc login --certificate-authority /var/run/secrets/kubernetes.io/serviceaccount/ca.crt --token "$TOKEN" https://${KUBERNETES_PORT_443_TCP#tcp://}
+    oc project "${NAMESPACE}"
+    echo -en "oc whoami: "; oc whoami --token "$TOKEN"
+    sleep 5
+    echo -en '\n\n\n'
+    while true
+    do
+      # echo -en '\nNamespace data\n'
+      # oc get namespace/${MY_POD_NAMESPACE} -o json
+      oc get project ${NAMESPACE} -o json
+      echo -en '\nid: '
+      id
+      sleep 5
+    done
+---
+# Pod definition for testing downward API
+apiVersion: v1
+kind: Pod
+metadata:
+  name: freeipa
+  labels:
+    app: freeipa
+spec:
+  containers:
+    - name: old-test-script-2-container
+      image: docker.io/openshift/origin-cli:v4.0
+      serviceaccount: default-plus
+      command: ["sh", "/var/configmap/test-scripts/test-script-2.sh"]
+      env:
+        - name: MY_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: MY_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+      volumeMounts:
+        - name: test-scripts
+          mountPath: /var/configmap/test-scripts
+    - name: old-test-script-1-container
+      image: k8s.gcr.io/busybox:1.24
+      command: ["sh", "/var/configmap/test-scripts/test-script-1.sh"]
+      env:
+        - name: MY_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: MY_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: MY_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: MY_POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: MY_POD_SERVICE_ACCOUNT
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.serviceAccountName
+      resources:
+        requests:
+          memory: "32Mi"
+          cpu: "125m"
+        limits:
+          memory: "64Mi"
+          cpu: "250m"
+      volumeMounts:
+        - name: podinfo
+          mountPath: /etc/podinfo
+        - name: test-scripts
+          mountPath: /var/configmap/test-scripts
+  volumes:
+    - name: podinfo
+      downwardAPI:
+        items:
+          - path: "labels"
+            fieldRef:
+              fieldPath: metadata.labels
+          - path: "annotations"
+            fieldRef:
+              fieldPath: metadata.annotations
+          - path: "cpu_limit"
+            resourceFieldRef:
+              containerName: old-test-script-1-container
+              resource: limits.cpu
+              divisor: 1m
+          - path: "cpu_request"
+            resourceFieldRef:
+              containerName: old-test-script-1-container
+              resource: requests.cpu
+              divisor: 1m
+          - path: "mem_limit"
+            resourceFieldRef:
+              containerName: old-test-script-1-container
+              resource: limits.memory
+              divisor: 1Mi
+          - path: "mem_request"
+            resourceFieldRef:
+              containerName: old-test-script-1-container
+              resource: requests.memory
+              divisor: 1Mi
+    - name: test-scripts
+      configMap:
+        name: test-scripts
+        items:
+          - key: "test-script-1"
+            path: "test-script-1.sh"
+          - key: "test-script-2"
+            path: "test-script-2.sh"
+---
+# Using a Deploy object to reference information from the namespace
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-scripts-app
+  labels:
+    app: test-downward-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: freeipa
+  template:
+    metadata:
+      labels:
+        app: freeipa
+    spec:
+      containers:
+        - name: test-script-2-container-2
+          image: docker.io/openshift/origin-cli:v4.0
+          securityContext:
+            runAsUser: 1000630002
+          command: ["sh", "/var/configmap/test-scripts/test-script-2.sh"]
+          volumeMounts:
+            - name: test-scripts
+              mountPath: /var/configmap/test-scripts
+
+        - name: test-script-2-container-1
+          image: docker.io/openshift/origin-cli:v4.0
+          command: ["sh", "/var/configmap/test-scripts/test-script-2.sh"]
+          env:
+            - name: MY_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: MY_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          volumeMounts:
+            - name: test-scripts
+              mountPath: /var/configmap/test-scripts
+        - name: test-script-1-container
+          image: k8s.gcr.io/busybox:1.24
+          command: ["sh", "/var/configmap/test-scripts/test-script-1.sh"]
+          env:
+            - name: MY_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: MY_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: MY_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: MY_POD_SERVICE_ACCOUNT
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.serviceAccountName
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "125m"
+            limits:
+              memory: "64Mi"
+              cpu: "250m"
+          volumeMounts:
+            - name: podinfo
+              mountPath: /etc/podinfo
+            - name: test-scripts
+              mountPath: /var/configmap/test-scripts
+      volumes:
+        - name: podinfo
+          downwardAPI:
+            items:
+              - path: "labels"
+                fieldRef:
+                  fieldPath: metadata.labels
+              - path: "annotations"
+                fieldRef:
+                  fieldPath: metadata.annotations
+              - path: "cpu_limit"
+                resourceFieldRef:
+                  containerName: test-script-1-container
+                  resource: limits.cpu
+                  divisor: 1m
+              - path: "cpu_request"
+                resourceFieldRef:
+                  containerName: test-script-1-container
+                  resource: requests.cpu
+                  divisor: 1m
+              - path: "mem_limit"
+                resourceFieldRef:
+                  containerName: test-script-1-container
+                  resource: limits.memory
+                  divisor: 1Mi
+              - path: "mem_request"
+                resourceFieldRef:
+                  containerName: test-script-1-container
+                  resource: requests.memory
+                  divisor: 1Mi
+        - name: test-scripts
+          configMap:
+            name: test-scripts
+            items:
+              - key: "test-script-1"
+                path: "test-script-1.sh"
+              - key: "test-script-2"
+                path: "test-script-2.sh"
+
+---
+kind: Deployment
+apiVersion: 
+

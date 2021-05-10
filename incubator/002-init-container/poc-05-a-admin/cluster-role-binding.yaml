@@ -1,0 +1,15 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: init-container
+  labels:
+    app: init-container
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: init-container
+subjects:
+  - kind: ServiceAccount
+    name: init-container
+    namespace: freeipa-operator

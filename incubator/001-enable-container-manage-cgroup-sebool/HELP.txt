@@ -1,0 +1,5 @@
+Rules:
+  enable-cgroup-sebool
+    Enable cgroup sebool into the cluster nodes.
+  disable-cgroup-sebool
+    Disable cgroup sebool into the cluster nodes.

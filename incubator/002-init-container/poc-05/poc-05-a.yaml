@@ -1,0 +1,6 @@
+# Proof of Concept that launch ipa-server-install in an initContainer,
+# preparing the whole data volume.
+#
+# Quick Start:
+#   export APP=poc-05-a; make app-delete app-deploy get-info
+

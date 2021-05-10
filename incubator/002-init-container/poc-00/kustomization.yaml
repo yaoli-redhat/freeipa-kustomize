@@ -1,0 +1,13 @@
+# https://kubectl.docs.kubernetes.io/references/kustomize/kustomization/
+#
+# Proof of Concept for hello world
+#
+# Quick Start:
+#   export APP=poc-00; make app-delete app-deploy get-info
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - configmap-scripts.yaml
+  - pod-init-container.yaml

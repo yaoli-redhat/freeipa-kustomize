@@ -1,0 +1,23 @@
+# https://kubectl.docs.kubernetes.io/references/kustomize/kustomization/
+#
+# Proof of Concept for reading namespace info and inject it in the ConfigMap
+#
+# Quick Start:
+#   kustomize build config | oc create -f -
+#   oc describe pod/poc-003
+#   kustomize build config | oc delete -f -
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - serviceaccount.yaml
+  - scc.yaml
+  - role.yaml
+  - rolebinding.yaml
+  - pod.yaml
+  - service.yaml
+  - route.yaml
+
+configurations:
+  - "kustomizeconfig.yaml"

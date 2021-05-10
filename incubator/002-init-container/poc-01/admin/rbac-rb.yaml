@@ -1,0 +1,16 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: init-container
+  labels:
+    app: init-container
+subjects:
+  - kind: ServiceAccount
+    name: init-container
+  - kind: User
+    name: init-container
+roleRef:
+  kind: Role
+  name: init-container
+  apiGroup: rbac.authorization.k8s.io

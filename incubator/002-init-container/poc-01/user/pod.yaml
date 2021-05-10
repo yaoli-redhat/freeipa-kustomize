@@ -1,0 +1,69 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: poc-01
+  labels:
+    app: poc-01
+spec:
+  serviceAccountName: init-container
+  automountServiceAccountToken: true
+  containers:
+    - name: main
+      image: docker.io/openshift/origin-cli:v4.0
+      resources:
+        limits:
+          cpu: "1"
+          memory: "48Mi"
+      command: ["/opt/init-container/main.sh"]
+      env:
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: UID_BASE
+          valueFrom:
+            configMapKeyRef:
+              name: init-container
+              key: UID_BASE
+        - name: GID_BASE
+          valueFrom:
+            configMapKeyRef:
+              name: init-container
+              key: GID_BASE
+      volumeMounts:
+        - name: scripts
+          mountPath: /opt/init-container
+  initContainers:
+    - name: init-uid-gid-base
+      image: docker.io/openshift/origin-cli:v4.0
+      command: ["/opt/init-container/init-uid-gid-base.sh"]
+      env:
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: UID_BASE
+          valueFrom:
+            configMapKeyRef:
+              name: init-container
+              key: UID_BASE
+        - name: GID_BASE
+          valueFrom:
+            configMapKeyRef:
+              name: init-container
+              key: GID_BASE
+      volumeMounts:
+        - name: scripts
+          mountPath: /opt/init-container
+  volumes:
+    - name: scripts
+      configMap:
+        name: init-container
+        items:
+          - key: "init-uid-gid-base.sh"
+            path: "init-uid-gid-base.sh"
+            mode: 0770
+          - key: "main.sh"
+            path: "main.sh"
+            mode: 0770

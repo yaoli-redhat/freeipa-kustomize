@@ -1,0 +1,84 @@
+# This Proof of Concept define redirect traffic to the cluster using an
+# ExternalIP
+#
+# Quick start:
+#   export APP=poc-05-d
+#   make app-delete app-deploy get-info
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: poc05-d
+  labels:
+    app: poc05-d
+spec:
+  type: ExternalName
+  externalName: 001-external-ip.apps.permanent.idmocp.lab.eng.rdu2.redhat.com
+  selector:
+    app: poc05-d
+  # publishNotReadyAddress: true
+  ports:
+    - name: https-tcp
+      port: 443
+      protocol: TCP
+      targetPort: 80
+---
+kind: Route
+apiVersion: v1
+metadata:
+  annotations:
+    haproxy.router.openshift.io/hsts_header: max-age=31536000;includeSubDomains;preload
+  name: poc05-d
+  labels:
+    app: poc05-d
+spec:
+  host: 001-external-ip.apps.permanent.idmocp.lab.eng.rdu2.redhat.com
+  to:
+    kind: Service
+    name: poc05-d
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Allow
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: poc05-d
+  labels:
+    app: poc05-d
+data:
+  index.html: |
+    <html>
+    <head><title>Hello World!</title></head>
+    <body>
+    <h1>Hello World!</h1>
+    </body>
+    </html>
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  name: poc05-d
+  labels:
+    app: poc05-d
+spec:
+  containers:
+    - name: nginx
+      # https://hub.docker.com/_/nginx?tab=description
+      image: docker.io/nginx:stable
+      volumeMounts:
+        - mountPath: /usr/share/nginx/html
+          name: web-content
+      ports:
+        - containerPort: 80
+          protocol: TCP
+          name: http-tcp
+  volumes:
+    - name: web-content
+      configMap:
+        defaultMode: 0444
+        name: poc05-d
+        optional: false
+        items:
+          - key: index.html
+            path: index.html

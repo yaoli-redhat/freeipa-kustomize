@@ -1,0 +1,37 @@
+Available rules:
+  container-build
+    Build the container image to be used into the examples.
+    It requires to assign DOCKER_IMAGE such as:
+      DOCKER_IMAGE=quay.io/myusername/freeipa-kustomize:002-init-container
+  container-push
+    Push the built container to the container registry. You need to
+    be logged in into the registry before run this command.
+    It requires to assign DOCKER_IMAGE such as:
+      DOCKER_IMAGE=quay.io/myusername/freeipa-kustomize:002-init-container
+  container-remove
+    Remove the container image from the workstation.
+    It requires to assign DOCKER_IMAGE such as:
+      DOCKER_IMAGE=quay.io/myusername/freeipa-kustomize:002-init-container
+  app-validate
+    Validate IaC stored into Kustomize projects for the given poc.
+    Try with:
+      APP=poc-00 make app-validate
+  app-create
+  app-delete
+  app-info
+
+
+Variables:
+- APP could be one of the below values:
+  poc-00
+  poc-01
+  poc-03
+  poc-04
+  poc-05-a
+  poc-05-b
+  poc-05-c
+  poc-05-d
+  poc-05-e
+  poc-05-f
+- DOCKER_IMAGE
+- 

@@ -1,0 +1,15 @@
+# https://kubectl.docs.kubernetes.io/references/kustomize/kustomization/
+#
+# Proof of Concept for reading namespace info and inject it in the ConfigMap
+#
+# Quick Start:
+#   kustomize build poc-04 | oc create -f -
+#   oc describe pod/poc-04
+#   kustomize build poc-04 | oc delete -f -
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+bases:
+- admin
+- user

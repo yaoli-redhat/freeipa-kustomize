@@ -1,0 +1,258 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: init-container
+  labels:
+    app: init-container
+  annotations:
+    openshift.io/scc: init-container
+spec:
+  serviceAccountName: init-container
+  automountServiceAccountToken: true
+  # dnsConfig:
+  #   nameservers:
+  #     - 127.0.0.1
+  # hostAliases:
+  #   - ip: "127.0.0.1"
+  #     hostnames:
+  #       - poc-05-a.apps.permanent.idmocp.lab.eng.rdu2.redhat.com
+  #       - apps.permanent.idmocp.lab.eng.rdu2.redhat.com
+  containers:
+    - name: main
+      image: docker.io/openshift/origin-cli:v4.0
+      resources:
+        limits:
+          cpu: "2"
+          memory: "2Gi"
+      securityContext:
+        # privileged: true
+        capabilities:
+          add:
+            - "SYS_ADMIN"
+            - "SYS_RESOURCE"
+            # - "MKNOD"
+            # - "SYS_RAWIO"
+            # - "SETUID"
+            # - "SETGID"
+            # - "SETPCAP"
+      command: ["/usr/sbin/init"]
+      env:
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: UID_BASE
+          valueFrom:
+            configMapKeyRef:
+              name: poc-05-a
+              key: UID_BASE
+        - name: GID_BASE
+          valueFrom:
+            configMapKeyRef:
+              name: poc-05-a
+              key: GID_BASE
+      volumeMounts:
+        - name: scripts
+          mountPath: /opt/poc-05-a
+  initContainers:
+    - name: init-container-uuid
+      image: docker.io/openshift/origin-cli:v4.0
+      resources:
+        limits:
+          cpu: "1"
+          memory: "48Mi"
+      command: ["/opt/poc-05-a/init-container-uuid.sh"]
+      env:
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: container_uuid
+          valueFrom:
+            configMapKeyRef:
+              name: poc-05-a
+              key: container_uuid
+      volumeMounts:
+        - name: scripts
+          mountPath: /opt/poc-05-a
+
+    - name: init-uid-gid-base
+      image: docker.io/openshift/origin-cli:v4.0
+      resources:
+        limits:
+          cpu: "1"
+          memory: "48Mi"
+      command: ["/opt/poc-05-a/init-uid-gid-base.sh"]
+      env:
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: UID_BASE
+          valueFrom:
+            configMapKeyRef:
+              name: poc-05-a
+              key: UID_BASE
+        - name: GID_BASE
+          valueFrom:
+            configMapKeyRef:
+              name: poc-05-a
+              key: GID_BASE
+      volumeMounts:
+        - name: scripts
+          mountPath: /opt/poc-05-a
+
+    - name: init-volume
+      image: quay.io/avisied0/freeipa-openshift-container:dev-test
+      resources:
+        limits:
+          cpu: "1"
+          memory: "48Mi"
+      imagePullPolicy: Always
+      # We need 'tty: true' to see the systemd traces
+      tty: true
+      securityContext:
+        privileged: false
+        capabilities:
+          drop:
+            # Default capabilities anyuid
+
+            # No default capabilities
+            - "AUDIT_CONTROL"
+            - "AUDIT_READ"
+            - "BLOCK_SUSPEND"
+            - "DAC_READ_SEARCH"
+            - "IPC_LOCK"
+            - "IPC_OWNER"
+            - "LEASE"
+            - "LINUX_IMMUTABLE"
+            - "MAC_ADMIN"
+            - "MAC_OVERRIDE"
+            - "NET_ADMIN"
+            - "NET_BROADCAST"
+            - "SYS_BOOT"
+            - "SYS_MODULE"
+            - "SYS_NICE"
+            - "SYS_PACCT"
+            - "SYS_PTRACE"
+            - "SYS_RAWIO"
+            - "SYS_TIME"
+            - "SYS_TTY_CONFIG"
+            - "SYSLOG"
+            - "WAKE_ALARM"
+            - "SYS_RAWIO"
+            - "MKNOD"
+          add:
+            # Default capabilities anyuid
+            - "SETUID"
+            - "SETGID"
+            - "CHOWN"
+            - "SETFCAP"
+            - "FSETID"
+            - "FOWNER"
+            - "SETPCAP"
+            - "DAC_OVERRIDE"
+            - "NET_RAW"
+            - "NET_BIND_SERVICE"
+            - "SYS_CHROOT"
+            - "KILL"
+            - "AUDIT_WRITE"
+
+            # No default capabilities
+            - "SYS_ADMIN"
+            - "SYS_RESOURCE"
+
+      command: ["/usr/sbin/init"]
+      args:
+        - exit-on-finished
+        - -U
+        # - --hostname
+        # - poc-05-a.apps.permanent.idmocp.lab.eng.rdu2.redhat.com
+        - --realm
+        - apps.permanent.idmocp.lab.eng.rdu2.redhat.com
+        - --no-ntp
+        - --no-sshd
+        - --no-ssh
+        - --verbose
+      env:
+        # - name: SYSTEMD_OPTS
+        #   value: "--show-status=true --unit=ipa-server-configure-first.service"
+        - name: SYSTEMD_LOG_LEVEL
+          value: "debug"
+        - name: SYSTEMD_LOG_TARGET
+          value: "console"
+        - name: SYSTEMD_LOG_COLOR
+          value: "no"
+        - name: INIT_WRAPPER
+          value: "1"
+        - name: DEBUG_TRACE
+          valueFrom:
+            configMapKeyRef:
+              name: poc-05-a
+              key: DEBUG_TRACE
+        - name: PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              name: poc-05-a
+              key: PASSWORD
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: UID_BASE
+          valueFrom:
+            configMapKeyRef:
+              name: poc-05-a
+              key: UID_BASE
+        - name: GID_BASE
+          valueFrom:
+            configMapKeyRef:
+              name: poc-05-a
+              key: GID_BASE
+        - name: IPA_SERVER_HOSTNAME
+          valueFrom:
+            configMapKeyRef:
+              name: poc-05-a
+              key: IPA_SERVER_HOSTNAME
+        - name: container_uuid
+          valueFrom:
+            configMapKeyRef:
+              name: poc-05-a
+              key: container_uuid
+        # - name: IPA_SERVER_IP
+        #   valueFrom:
+        #     fieldRef:
+        #       fieldPath: status.podIP
+
+        - name: container
+          valueFrom:
+            configMapKeyRef:
+              name: poc-05-a
+              key: container
+        - name: SYSTEMD_OFFLINE
+          value: "1"
+        - name: SYSTEMD_NSPAWN_API_VFS_WRITABLE
+          value: "network"
+
+      volumeMounts:
+        - name: data
+          mountPath: /data
+        - name: run
+          mountPath: /run
+
+  volumes:
+    - name: data
+      emptyDir: {}
+    - name: scripts
+      configMap:
+        name: poc-05-a
+        items:
+          - key: "init-container-uuid.sh"
+            path: "init-container-uuid.sh"
+            mode: 0777
+          - key: "init-uid-gid-base.sh"
+            path: "init-uid-gid-base.sh"
+            mode: 0777
+    - name: run
+      emptyDir: {}

@@ -1,0 +1,79 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: poc-003
+  labels:
+    app: poc-003
+data:
+  DEBUG_TRACE: "2"
+  IPA_SERVER_HOSTNAME: "poc-003.apps.permanent.idmocp.lab.eng.rdu2.redhat.com"
+  IPA_SERVER_IP: "10.0.135.189"
+  # TODO Move PASSWORD into a Secret object
+  PASSWORD: "Secret123"
+  container: "podman"
+  container_uuid: ""
+  UID_BASE: ""
+  GID_BASE: ""
+  # yamllint disable rule:line-length
+  init-uid-gid-base.sh: |
+    #!/bin/bash
+    function yield {
+      echo "$*" >&2
+    }
+    function verbose {
+      yield "$*"
+      "$@"
+    }
+    echo "Script: $0"
+    TOKEN="$(</var/run/secrets/kubernetes.io/serviceaccount/token)"
+    CA_CERT="/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+    APP="poc-003"
+    echo "NAMESPACE=${NAMESPACE}"
+    oc login --token ""  \
+             --certificate-authority="" \
+             https://kubernetes.default.svc:443
+    if [ "${UID_BASE}" == "" ]; then
+      UID_BASE="$( oc get namespace/${NAMESPACE} \
+                   -o 'jsonpath={.metadata.annotations.openshift\.io/sa\.scc\.uid-range}' )"
+      UID_BASE="${UID_BASE%/*}"
+      oc patch configmap ${APP} --patch "{\"data\":{\"UID_BASE\": \"${UID_BASE}\"}}"
+    fi
+    if [ "${GID_BASE}" == "" ]; then
+      GID_BASE="$( oc get namespace/${NAMESPACE} \
+                   -o 'jsonpath={.metadata.annotations.openshift\.io/sa\.scc\.supplemental-groups}' )"
+      GID_BASE="${GID_BASE%/*}"
+      oc patch configmap ${APP} \
+         --patch "{\"data\":{\"GID_BASE\":\"${GID_BASE}\"}}"
+    fi
+    UID_BASE="$( oc get cm/${APP} -o 'jsonpath={.data.UID_BASE}' )"
+    GID_BASE="$( oc get cm/${APP} -o 'jsonpath={.data.GID_BASE}' )"
+    echo "configMap.data.UID_BASE=${UID_BASE}"
+    echo "configMap.data.GID_BASE=${GID_BASE}"
+
+  # yamllint disable rule:line-length
+  init-container-uuid.sh: |
+    #!/bin/bash
+    function yield {
+      echo "$*" >&2
+    }
+    function verbose {
+      yield "$*"
+      "$@"
+    }
+    echo "Script: $0"
+    TOKEN="$(</var/run/secrets/kubernetes.io/serviceaccount/token)"
+    CA_CERT="/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+    APP="poc-003"
+    echo "NAMESPACE=${NAMESPACE}"
+    oc login --token "${TOKEN}" \
+             --certificate-authority="${CA_CERT}" \
+             https://kubernetes.default.svc:443
+    container_uuid="$( oc get configmap ${APP} -o 'jsonpath={.data.container_uuid}' )"
+    if [ "${container_uuid}" == "" ]; then
+      systemd-machine-id-setup
+      container_uuid="$(</etc/machine-id)"
+      oc patch configmap ${APP} \
+         --patch "{\"data\":{\"container_uuid\": \"${container_uuid}\"}}"
+    fi
+    echo "configMap.data.container_uuid='$( oc get configmap ${APP} -o 'jsonpath={.data.container_uuid}' )'"
