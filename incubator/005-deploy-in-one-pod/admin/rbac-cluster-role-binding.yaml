@@ -1,0 +1,19 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: freeipa
+  namespace: freeipa
+  labels:
+    app: freeipa
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: freeipa
+subjects:
+  - kind: ServiceAccount
+    name: freeipa
+    namespace: freeipa
+  - kind: User
+    name: freeipa
+    namespace: freeipa

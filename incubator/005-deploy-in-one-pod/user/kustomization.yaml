@@ -1,0 +1,43 @@
+# https://kubectl.docs.kubernetes.io/references/kustomize/kustomization/
+#
+# Proof of Concept for reading namespace info and inject it in the ConfigMap
+#
+# Quick Start:
+#   oc kustomize . | oc create -
+#   oc describe pod/poc-01
+#   oc kustomize . | oc delete -
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+secretGenerator:
+  - name: freeipa
+    namespace: freeipa
+    type: Opaque
+    envs:
+    - admin-pass.txt
+
+# vars:
+# - name: CLUSTER_DOMAIN
+#   objref: 
+#     kind: DNS
+#     name: cluster
+#     apiVersion: config.openshift.io/v1
+#   fieldref:
+#     fieldpath: spec.baseDomain
+# - name: CLUSTER_DOMAIN
+#   objref: 
+#     kind: ConfigMap
+#     name: freeipa
+#     apiVersion: v1
+#   fieldref:
+#     fieldpath: data.CLUSTER_DOMAIN
+
+resources:
+- configmap.yaml
+- pod.yaml
+- service-kerberos.yaml
+- service-web.yaml
+- service-ldap.yaml
+- route.yaml
+

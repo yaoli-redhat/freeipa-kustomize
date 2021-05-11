@@ -1,0 +1,19 @@
+---
+# create a new ClusterRole (since SCC's are cluster scoped instead of namespace
+# scoped) that will provide access to a given SCC
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: freeipa
+  namespace: freeipa
+  labels:
+    app: freeipa
+rules:
+  - apiGroups:
+      - security.openshift.io
+    resources:
+      - securitycontextconstraints
+    resourceNames:
+      - freeipa
+    verbs:
+      - use

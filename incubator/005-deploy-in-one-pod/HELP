@@ -1,0 +1,8 @@
+Available commands:
+    container-build
+    container-push
+    container-remove
+    app-validate
+    app-create
+    app-delete
+    get-info

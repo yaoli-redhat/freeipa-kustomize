@@ -1,0 +1,88 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: freeipa
+rules:
+  # Normal permissions for using the general resources.
+  - apiGroups:
+      - ""
+    resources:
+      - "secrets"
+    verbs:
+      - "get"
+      - "create"
+      - "update"
+      - "watch"
+      - "list"
+      - "delete"
+
+  - apiGroups:
+      - ""
+    resources:
+      - "pods"
+    verbs:
+      - "get"
+      - "create"
+      - "update"
+      - "watch"
+      - "list"
+      - "delete"
+
+  - apiGroups:
+      - ""
+    resources:
+      - "services"
+    verbs:
+      - "get"
+      - "create"
+      - "update"
+      - "watch"
+      - "list"
+      - "delete"
+
+  - apiGroups:
+      - ""
+    resources:
+      - "configmaps"
+    verbs:
+      - "get"
+      - "create"
+      - "update"
+      - "watch"
+      - "list"
+      - "delete"
+
+  - apiGroups:
+      - "route.openshift.io"
+    resources:
+      - "routes"
+    verbs:
+      - "get"
+      - "create"
+      - "update"
+      - "watch"
+      - "list"
+      - "delete"
+  # Fix 'spec.host: Forbidden: you do not have permission to set the host field
+  # of the route'
+  # https://github.com/openshift/origin/issues/14904#issuecomment-341757280
+  - apiGroups:
+      - "route.openshift.io"
+    resources:
+      - "routes/custom-host"
+    verbs:
+      - "create"
+      - "delete"
+
+  - apiGroups: [""]
+    resources:
+      - "serviceaccounts"
+    verbs:
+      - "use"
+
+  - apiGroups: ["security.openshift.io"]
+    resources:
+      - "securitycontextconstraints"
+    verbs:
+      - "use"

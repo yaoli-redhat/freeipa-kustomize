@@ -1,0 +1,11 @@
+Makefile rules:
+  ocp-create
+    Create the application into the cluster.
+  ocp-delete
+    Delete the application from the cluster.
+
+Variables:
+  OCP_CONFIG
+    Directory for the kustomize project to be applied.
+    By defualt `config/static/single-pod` is used, if
+    it is not specified.

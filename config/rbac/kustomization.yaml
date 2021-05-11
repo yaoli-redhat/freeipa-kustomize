@@ -1,0 +1,7 @@
+---
+resources:
+  - scc.yaml
+  - user.yaml
+  - serviceaccount.yaml
+  - user_role.yaml
+  - user_role_binding.yaml
