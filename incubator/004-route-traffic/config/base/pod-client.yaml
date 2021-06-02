@@ -1,0 +1,28 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: freeipa
+  labels:
+    app: freeipa
+    role: client
+spec:
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - topologyKey: "kubernetes.io/hostname"
+          labelSelector:
+            matchLabels:
+              app: freeipa
+              role: services
+  serviceAccountName: poc-004
+  containers:
+    # https://github.com/nicolaka/netshoot
+    - name: client
+      image: docker.io/nicolaka/netshoot
+      resources:
+        limits:
+          cpu: "1"
+          memory: "48Mi"
+      command: ["cat"]
+      stdin: true

@@ -1,0 +1,24 @@
+Main rules in Makefile:
+  container-build
+    Build the DOCKER_IMAGE container image.
+  container-push
+    Push the DOCKER_IMAGE container image.
+  app-create
+    Deploy the proof of concept application.
+  app-destroy
+    Remove the application from the cluster.
+  app-info
+    Information 
+
+  run-udp
+    Run a UDP server locally.
+  run-tcp
+    Run a TCP server locally.
+------------------------------------------------------------------------------
+APP               poc-004-1 poc-004-2 poc-004-3 poc-004-4a poc-004-4b poc-004-4c poc-004-4d
+ECHO_ADDRESS      The address which the server bind to (0.0.0.0 by default)
+ECHO_PORT         The port which the server bind to (8007 by default)
+ECHO_MAX_CLIENTS  For tcp server, the maximum clients accepted (1 by default)
+DOCKER_BASE       Set to the scope where the container image will be pushed
+                  such as "quay.io/freeipa". By default it is "quay.io/freeipa".
+                  You need to have write access permission.

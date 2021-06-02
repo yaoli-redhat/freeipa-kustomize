@@ -1,0 +1,185 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: freeipa-services
+  labels:
+    app: freeipa
+    role: services
+spec:
+  serviceAccountName: poc-004
+  resources:
+    limits:
+      cpu: "1"
+      memory: "1Gi"
+  containers:
+    # https://github.com/nicolaka/netshoot
+    - name: client
+      image: docker.io/nicolaka/netshoot
+      resources:
+        limits:
+          cpu: "1"
+          memory: "48Mi"
+      command: ["cat"]
+      stdin: true
+
+    - name: http
+      image: quay.io/freeipa/freeipa-operator:poc-004
+      resources:
+        limits:
+          cpu: "1"
+          memory: "64Mi"
+      securityContext:
+        capabilities:
+          add:
+            - NET_BIND_SERVICE
+      env:
+        - name: "ECHO_PORT"
+          value: "80"
+        - name: "ECHO_PROTOCOL"
+          value: "tcp"
+      ports:
+        - name: http-tcp
+          containerPort: 80
+          hostPort: 80
+          protocol: TCP
+
+    - name: https
+      image: quay.io/freeipa/freeipa-operator:poc-004
+      resources:
+        limits:
+          cpu: "1"
+          memory: "64Mi"
+      securityContext:
+        capabilities:
+          add:
+            - NET_BIND_SERVICE
+      env:
+        - name: "ECHO_PORT"
+          value: "443"
+        - name: "ECHO_PROTOCOL"
+          value: "tcp"
+      ports:
+        - containerPort: 443
+          hostPort: 443
+          protocol: TCP
+
+    - name: ldap
+      image: quay.io/freeipa/freeipa-operator:poc-004
+      resources:
+        limits:
+          cpu: "1"
+          memory: "64Mi"
+      securityContext:
+        capabilities:
+          add:
+            - NET_BIND_SERVICE
+      env:
+        - name: "ECHO_PORT"
+          value: "389"
+        - name: "ECHO_PROTOCOL"
+          value: "tcp"
+      ports:
+        - containerPort: 389
+          hostPort: 389
+          protocol: TCP
+
+    - name: ldaps
+      image: quay.io/freeipa/freeipa-operator:poc-004
+      resources:
+        limits:
+          cpu: "1"
+          memory: "64Mi"
+      securityContext:
+        capabilities:
+          add:
+            - NET_BIND_SERVICE
+      env:
+        - name: "ECHO_PORT"
+          value: "636"
+        - name: "ECHO_PROTOCOL"
+          value: "tcp"
+      ports:
+        - containerPort: 636
+          hostPort: 636
+          protocol: TCP
+
+    - name: kerberos-tcp
+      image: quay.io/freeipa/freeipa-operator:poc-004
+      resources:
+        limits:
+          cpu: "1"
+          memory: "64Mi"
+      securityContext:
+        capabilities:
+          add:
+            - NET_BIND_SERVICE
+      env:
+        - name: "ECHO_PORT"
+          value: "88"
+        - name: "ECHO_PROTOCOL"
+          value: "tcp"
+      ports:
+        - containerPort: 88
+          hostPort: 88
+          protocol: TCP
+
+    - name: kerberos-admin-tcp
+      image: quay.io/freeipa/freeipa-operator:poc-004
+      resources:
+        limits:
+          cpu: "1"
+          memory: "64Mi"
+      securityContext:
+        capabilities:
+          add:
+            - NET_BIND_SERVICE
+      env:
+        - name: "ECHO_PORT"
+          value: "464"
+        - name: "ECHO_PROTOCOL"
+          value: "tcp"
+      ports:
+        - containerPort: 464
+          hostPort: 464
+          protocol: TCP
+
+    - name: kerberos-udp
+      image: quay.io/freeipa/freeipa-operator:poc-004
+      resources:
+        limits:
+          cpu: "1"
+          memory: "64Mi"
+      securityContext:
+        capabilities:
+          add:
+            - NET_BIND_SERVICE
+      env:
+        - name: "ECHO_PORT"
+          value: "88"
+        - name: "ECHO_PROTOCOL"
+          value: "udp"
+      ports:
+        - containerPort: 88
+          hostPort: 88
+          protocol: UDP
+
+    - name: kerberos-admin-udp
+      image: quay.io/freeipa/freeipa-operator:poc-004
+      resources:
+        limits:
+          cpu: "1"
+          memory: "64Mi"
+      securityContext:
+        capabilities:
+          add:
+            - NET_BIND_SERVICE
+      env:
+        - name: "ECHO_PORT"
+          value: "464"
+        - name: "ECHO_PROTOCOL"
+          value: "udp"
+      ports:
+        - containerPort: 464
+          hostPort: 464
+          protocol: UDP

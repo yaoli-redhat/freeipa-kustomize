@@ -1,0 +1,53 @@
+# https://kubernetes.io/docs/concepts/services-networking/service/
+# https://kubernetes.io/docs/concepts/services-networking/service/#internal-load-balancer
+# https://kubernetes.io/docs/concepts/services-networking/service/#externalname
+# https://kubernetes.io/docs/concepts/services-networking/service/#external-ips
+# https://docs.openshift.com/container-platform/4.6/networking/configuring_ingress_cluster_traffic/configuring-externalip.html#nw-externalip-about_configuring-externalip
+# https://docs.openshift.com/container-platform/4.6/installing/installing_openstack/installing-openstack-installer-custom.html#installing-openstack-installer-custom
+# https://docs.openshift.com/container-platform/3.4/dev_guide/expose_service/expose_internal_ip_service.html
+# Egress is for traffic from cluster to outside
+# https://www.openshift.com/blog/how-to-enable-static-egress-ip-in-ocp
+# https://docs.openshift.com/container-platform/4.4/networking/configuring_ingress_cluster_traffic/configuring-externalip.html
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: poc-004-4c
+spec:
+  type: NodePort
+  selector:
+    app: poc-004-4c
+    role: services
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      nodePort: 31080
+    - name: https
+      protocol: TCP
+      port: 443
+      nodePort: 31443
+    - name: ldap
+      protocol: TCP
+      port: 389
+      nodePort: 31389
+    - name: ldaps
+      protocol: TCP
+      port: 636
+      nodePort: 31636
+    - name: kerberos-tcp
+      protocol: TCP
+      port: 88
+      nodePort: 31088
+    - name: kerberos-admin-tcp
+      protocol: TCP
+      port: 464
+      nodePort: 31464
+    - name: kerberos-udp
+      protocol: UDP
+      port: 88
+      nodePort: 31088
+    - name: kerberos-admin-udp
+      protocol: UDP
+      port: 464
+      nodePort: 31464

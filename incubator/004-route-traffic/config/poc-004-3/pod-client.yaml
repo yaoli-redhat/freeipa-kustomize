@@ -1,0 +1,32 @@
+# https://kubernetes.io/docs/concepts/services-networking/service/
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: poc-004-3-client
+  labels:
+    role: client
+spec:
+  affinity:
+    # Do not copy this to the services pod
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - topologyKey: "kubernetes.io/hostname"
+          labelSelector:
+            matchLabels:
+              app: poc-004-3
+              role: services
+  serviceAccountName: poc-004
+  containers:
+    # https://github.com/nicolaka/netshoot
+    - name: client
+      image: quay.io/avisied0/netshoot:latest
+      resources:
+        limits:
+          cpu: 400m
+          memory: 32Mi
+        requests:
+          cpu: 200m
+          memory: 32Mi
+      command: ["cat"]
+      stdin: true
