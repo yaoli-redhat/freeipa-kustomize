@@ -1,0 +1,21 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: poc-004-4a-udp
+spec:
+  type: NodePort
+  externalIPs:
+    - ${EXTERNAL_IP}
+  selector:
+    app: poc-004-4a
+    role: services
+  ports:
+    - name: kerberos-udp
+      protocol: UDP
+      port: 88
+      targetPort: 88
+    - name: kerberos-admin-udp
+      protocol: UDP
+      port: 464
+      targetPort: 464
