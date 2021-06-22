@@ -35,7 +35,7 @@ help:
 .PHONY: ocp-create
 ocp-create: check-kustomize
 	-oc new-project freeipa
-	$(MAKE) -C $(OCP_CONFIG) configure &> /dev/null
+	$(MAKE) -C $(OCP_CONFIG) configure
 	# cd $(OCP_CONFIG) && $(OCP_KUSTOMIZE) edit set image main=$(OCP_IMAGE)
 	$(OCP_KUSTOMIZE) build config/rbac | oc create -f -
 	$(OCP_KUSTOMIZE) build $(OCP_CONFIG) | oc create -f - --as=freeipa

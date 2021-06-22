@@ -6,8 +6,10 @@ SINGLEPOD_HOSTNAME := $(SINGLEPOD_NAMESPACE).apps.$(SINGLEPOD_BASEDOMAIN)
 SINGLEPOD_CA_SUBJECT := CN=freeipa-$(shell date +%Y%m%d%H%M%S ), O=$(SINGLEPOD_REALM)
 SINGLEPOD_ENV_FILE := env.properties
 
-SINGLEPOD_PASSWORD ?= Secret123
 SINGLEPOD_SECRETS_FILE := secrets.properties
+ifeq (,$(SINGLEPOD_PASSWORD))
+$(error "SINGLEPOD_PASSWORD is required for generating the secret with the password; you can set it before call 'make'")
+endif
 
 .PHONY: configure
 configure:
