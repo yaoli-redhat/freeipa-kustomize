@@ -1,7 +1,9 @@
----
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
 resources:
-  - scc.yaml
-  - user.yaml
-  - serviceaccount.yaml
-  - user_role.yaml
-  - user_role_binding.yaml
+- scc.yaml
+- user.yaml
+- serviceaccount.yaml
+- user_role.yaml
+- user_role_binding.yaml

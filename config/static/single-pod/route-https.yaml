@@ -10,7 +10,6 @@ metadata:
     app: freeipa
   name: freeipa
 spec:
-  # host: freeipa.apps.permanent-47.idmocp.lab.eng.rdu2.redhat.com
   host: $(IPA_SERVER_HOSTNAME)
   port:
     targetPort: https-tcp

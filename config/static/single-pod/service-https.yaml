@@ -7,10 +7,6 @@ metadata:
   name: freeipa-web
 spec:
   ports:
-  # - name: http-tcp
-  #   port: 80
-  #   protocol: TCP
-  #   targetPort: http-tcp
   - name: https-tcp
     port: 443
     protocol: TCP

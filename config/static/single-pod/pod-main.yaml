@@ -60,8 +60,6 @@ spec:
           key: IPA_SERVER_PASSWORD
           name: freeipa
           optional: false
-    - name: NAMESPACE
-      value: freeipa
     - name: IPA_SERVER_HOSTNAME
       value: $(IPA_SERVER_HOSTNAME)
     - name: container_uuid

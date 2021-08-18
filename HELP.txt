@@ -3,9 +3,13 @@ Makefile rules:
     Create the application into the cluster.
   ocp-delete
     Delete the application from the cluster.
+  ocp-build
+    Print out the configuration.
 
 Variables:
   OCP_CONFIG
     Directory for the kustomize project to be applied.
-    By defualt `config/static/single-pod` is used, if
-    it is not specified.
+    By default `config/static/single-pod` is used if nothing is specified.
+  OCP_NAMESPACE
+    The namespace where the resources will be created.
+    By default `freeipa` is used is used if nothing is specified.

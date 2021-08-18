@@ -1,0 +1,12 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: freeipa-main
+spec:
+  volumes:
+  - name: data
+    persistentVolumeClaim:
+      claimName: freeipa
+    emptyDir: null
+

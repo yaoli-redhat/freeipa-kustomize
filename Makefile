@@ -33,17 +33,26 @@ help:
 	@cat HELP.txt
 
 .PHONY: ocp-create
-ocp-create: check-kustomize
-	-oc new-project freeipa
+ocp-create: check-kustomize check-ocp-config
+	-oc new-project $(OCP_NAMESPACE)
+	$(MAKE) -C config/rbac configure
 	$(MAKE) -C $(OCP_CONFIG) configure
-	# cd $(OCP_CONFIG) && $(OCP_KUSTOMIZE) edit set image main=$(OCP_IMAGE)
-	$(OCP_KUSTOMIZE) build config/rbac | oc create -f -
-	$(OCP_KUSTOMIZE) build $(OCP_CONFIG) | oc create -f - --as=freeipa
+	$(KUSTOMIZE) build config/rbac | oc create -f -
+	$(KUSTOMIZE) build $(OCP_CONFIG) | oc create -f - --as=freeipa
+
+
+.PHONY: ocp-build
+ocp-build: check-ocp-config check-kustomize
+	$(MAKE) -C $(OCP_CONFIG) configure
+	$(KUSTOMIZE) build config/rbac
+	$(KUSTOMIZE) build $(OCP_CONFIG)
+
 
 .PHONY: ocp-delete
 ocp-delete:
-	-$(OCP_KUSTOMIZE) build $(OCP_CONFIG) | oc delete -f - --as=freeipa
-	-$(OCP_KUSTOMIZE) build config/rbac | oc delete -f -
+	-$(KUSTOMIZE) build $(OCP_CONFIG) | oc delete -f - --as=freeipa
+	-$(KUSTOMIZE) build config/rbac | oc delete -f -
+
 
 .PHONY: ocp-recreate
 ocp-recreate: ocp-delete ocp-create

@@ -1,0 +1,25 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+- ../../single-pod
+- pvc.yaml
+
+
+# patches:
+patchesStrategicMerge:
+- |-
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: freeipa-main
+  spec:
+    volumes:
+    - name: data
+      persistentVolumeClaim:
+        claimName: freeipa
+      emptyDir: null
+
+# The 'namespace' field is updated automatically by the Makefile file
+# Use OCP_NAMESPACE env variable for changing this
+namespace: freeipa

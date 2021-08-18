@@ -10,7 +10,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: freeipa
-    namespace: freeipa
+    # namespace: freeipa
   - kind: User
     name: freeipa
-    namespace: freeipa
+    # namespace: freeipa

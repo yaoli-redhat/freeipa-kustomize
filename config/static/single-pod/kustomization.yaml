@@ -1,28 +1,28 @@
- 
----
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
+# The 'namespace' field is updated automatically by the Makefile file
+# Use OCP_NAMESPACE env variable for changing this
 namespace: freeipa
 
 # bases:
 #   - ../base
 
 resources:
-  - pod-main.yaml
-  - service-https.yaml
-  - route-https.yaml
+- pod-main.yaml
+- service-https.yaml
+- route-https.yaml
 
 configMapGenerator:
-- name: config
-  envs:
-    - "env.properties"
+- envs:
+  - env.properties
+  name: config
 
 secretGenerator:
-  - name: freeipa
-    envs:
-      - "secrets.properties"
-    type: Opaque
+- envs:
+  - secrets.properties
+  name: freeipa
+  type: Opaque
 
 # generators:
 #   - 
@@ -31,27 +31,27 @@ secretGenerator:
 #   -
 
 vars:
-  - name: IPA_SERVER_HOSTNAME
-    objref:
-      name: config
-      kind: ConfigMap
-      apiVersion: v1
-    fieldref:
-      fieldpath: data.IPA_SERVER_HOSTNAME
-  - name: IPA_SERVER_REALM
-    objref:
-      name: config
-      kind: ConfigMap
-      apiVersion: v1
-    fieldref:
-      fieldpath: data.IPA_SERVER_REALM
-  - name: IPA_SERVER_CA_SUBJECT
-    objref:
-      name: config
-      kind: ConfigMap
-      apiVersion: v1
-    fieldref:
-      fieldpath: data.IPA_SERVER_CA_SUBJECT
+- fieldref:
+    fieldPath: data.IPA_SERVER_HOSTNAME
+  name: IPA_SERVER_HOSTNAME
+  objref:
+    apiVersion: v1
+    kind: ConfigMap
+    name: config
+- fieldref:
+    fieldPath: data.IPA_SERVER_REALM
+  name: IPA_SERVER_REALM
+  objref:
+    apiVersion: v1
+    kind: ConfigMap
+    name: config
+- fieldref:
+    fieldPath: data.IPA_SERVER_CA_SUBJECT
+  name: IPA_SERVER_CA_SUBJECT
+  objref:
+    apiVersion: v1
+    kind: ConfigMap
+    name: config
 
 configurations:
-  - "kustomizeconfig.yaml"
+- kustomizeconfig.yaml
