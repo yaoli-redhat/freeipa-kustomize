@@ -9,49 +9,14 @@ namespace: freeipa
 #   - ../base
 
 resources:
+- common/
 - pod-main.yaml
-- service-https.yaml
-- route-https.yaml
-
-configMapGenerator:
-- envs:
-  - env.properties
-  name: config
-
-secretGenerator:
-- envs:
-  - secrets.properties
-  name: freeipa
-  type: Opaque
 
 # generators:
 #   - 
 
 # transformers:
 #   -
-
-vars:
-- fieldref:
-    fieldPath: data.IPA_SERVER_HOSTNAME
-  name: IPA_SERVER_HOSTNAME
-  objref:
-    apiVersion: v1
-    kind: ConfigMap
-    name: config
-- fieldref:
-    fieldPath: data.IPA_SERVER_REALM
-  name: IPA_SERVER_REALM
-  objref:
-    apiVersion: v1
-    kind: ConfigMap
-    name: config
-- fieldref:
-    fieldPath: data.IPA_SERVER_CA_SUBJECT
-  name: IPA_SERVER_CA_SUBJECT
-  objref:
-    apiVersion: v1
-    kind: ConfigMap
-    name: config
 
 configurations:
 - kustomizeconfig.yaml

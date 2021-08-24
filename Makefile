@@ -43,6 +43,7 @@ ocp-create: check-kustomize check-ocp-config
 
 .PHONY: ocp-build
 ocp-build: check-ocp-config check-kustomize
+	$(MAKE) -C config/rbac configure
 	$(MAKE) -C $(OCP_CONFIG) configure
 	$(KUSTOMIZE) build config/rbac
 	$(KUSTOMIZE) build $(OCP_CONFIG)

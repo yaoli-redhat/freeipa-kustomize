@@ -98,3 +98,15 @@ rules:
       - "watch"
       - "list"
       - "delete"
+
+  - apiGroups:
+      - "apps"
+    resources:
+      - "statefulsets"
+    verbs:
+      - "get"
+      - "create"
+      - "update"
+      - "watch"
+      - "list"
+      - "delete"

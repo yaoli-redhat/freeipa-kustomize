@@ -7,20 +7,14 @@
 #         group: apiextensions.k8s.io
 #         path: spec/conversion/webhookClientConfig/service/name
 
-# namespace:
-#   - kind: CustomResourceDefinition
-#     group: apiextensions.k8s.io
-#     path: spec/conversion/webhookClientConfig/service/namespace
-#     create: false
-
 # varReference:
 #   - path: metadata/annotations
 #   - kind: IDM
 #     path: spec/passwordSecret
 
 varReference:
-  - kind: Pod
-    path: spec/containers/args
+  - kind: StatefulSet
+    path: spec/template/spec/containers/args
 
 images:
   - name: main

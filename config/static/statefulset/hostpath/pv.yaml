@@ -1,0 +1,18 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: freeipa
+  labels:
+    app: freeipa
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+  - ReadWriteOnce
+  - ReadWriteMany
+  - ReadOnlyMany
+  persistentVolumeReclaimPolicy: Recycle
+  hostPath:
+    path: /opt/freeipa/data
+

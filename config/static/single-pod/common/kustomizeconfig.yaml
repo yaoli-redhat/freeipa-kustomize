@@ -19,6 +19,8 @@
 #     path: spec/passwordSecret
 
 varReference:
+  - kind: Route
+    path: spec/host
   - kind: Pod
     path: spec/containers/args
 
