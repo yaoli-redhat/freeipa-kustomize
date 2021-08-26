@@ -7,3 +7,5 @@ resources:
 - serviceaccount.yaml
 - user_role.yaml
 - user_role_binding.yaml
+
+namespace: freeipa

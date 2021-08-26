@@ -1,4 +1,4 @@
-# https://docs.openshift.com/container-platform/4.5/authentication/managing-security-context-constraints.html
+# https://docs.openshift.com/container-platform/4.8/authentication/managing-security-context-constraints.html
 # https://kubernetes-security.info/
 ---
 apiVersion: security.openshift.io/v1
@@ -9,7 +9,6 @@ metadata:
     kubernetes.io/description: Provides a Freeipa Pod deployed all in one
       just for investigation prupose.
     release.openshift.io/create-only: "true"
-allowHostDirVolumePlugin: true
 allowHostIPC: false
 allowHostNetwork: false
 allowHostPID: false
@@ -74,4 +73,3 @@ volumes:
   - persistentVolumeClaim
   - projected
   - secret
-  - hostPath

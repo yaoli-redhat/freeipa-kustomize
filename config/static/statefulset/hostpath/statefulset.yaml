@@ -142,39 +142,11 @@ spec:
           mountPath: /data
         - mountPath: /tmp
           name: systemd-tmp
-        - mountPath: /sys
-          name: systemd-sys
-          readOnly: true
-        - mountPath: /sys/fs/selinux
-          name: systemd-sys-fs-selinux
-          readOnly: true
-        - mountPath: /sys/firmware
-          name: systemd-sys-firmware
-          readOnly: true
-        - mountPath: /sys/kernel
-          name: systemd-sys-kernel
-          readOnly: true
         - mountPath: /var/run
           name: systemd-var-run
         - mountPath: /var/run/dirsrv
           name: systemd-var-dirsrv
       volumes:
-      - hostPath:
-          path: /sys
-          type: DirectoryOrCreate
-        name: systemd-sys
-      - hostPath:
-          path: /sys/fs/selinux
-          type: Directory
-        name: systemd-sys-fs-selinux
-      - hostPath:
-          path: /sys/firmware
-          type: Directory
-        name: systemd-sys-firmware
-      - hostPath:
-          path: /sys/kernel
-          type: Directory
-        name: systemd-sys-kernel
       - emptyDir:
           medium: Memory
         name: systemd-var-run
