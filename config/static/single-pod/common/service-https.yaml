@@ -6,11 +6,14 @@ metadata:
     app: freeipa
   name: freeipa-web
 spec:
-  ports:
+  ports: 
   - name: https-tcp
     port: 443
     protocol: TCP
     targetPort: https-tcp
+  - name: ldap
+    port: 389
+    protocol: TCP
   selector:
     app: freeipa
   sessionAffinity: None

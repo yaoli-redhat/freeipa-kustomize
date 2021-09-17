@@ -84,13 +84,6 @@ spec:
         - containerPort: 443
           name: https-tcp
           protocol: TCP
-        resources:
-          limits:
-            cpu: 2000m
-            memory: 4Gi
-          requests:
-            cpu: 1500m
-            memory: 3Gi
         securityContext:
           capabilities:
             add:
